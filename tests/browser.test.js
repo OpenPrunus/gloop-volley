@@ -89,9 +89,16 @@ describe('page et mode local', () => {
     assert.match(await ev('document.querySelector("[data-action=ai]").textContent'), /ordinateur/);
     const c = await rect('#game');
     assert.ok(c.w > 600 && Math.abs(c.w / c.h - 16 / 9) < 0.02, `canvas 16/9 : ${c.w}x${c.h}`);
+    const gh = await ev('(() => { const a = document.querySelector(".foot a.gh"); return a && { href: a.href, target: a.target, rel: a.rel, text: a.textContent.trim(), visible: a.getBoundingClientRect().height > 0 }; })()');
+    assert.equal(gh.href, 'https://github.com/OpenPrunus/gloop-volley');
+    assert.equal(gh.target, '_blank');
+    assert.match(gh.rel, /noopener/);
+    assert.equal(gh.text, 'Voir le projet sur GitHub');
+    assert.ok(gh.visible, 'le lien est visible dans le menu');
     await shot('01-menu');
     await click('#opt-lang');
     assert.match(await ev('document.querySelector("[data-action=ai]").textContent'), /computer/);
+    assert.equal(await ev('document.querySelector(".foot a.gh").textContent.trim()'), 'View the project on GitHub');
     assert.equal(await ev('document.documentElement.lang'), 'en');
     assert.deepEqual(errors, []);
   });
