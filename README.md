@@ -64,17 +64,17 @@ engine (AI against AI, plus random-input chaos) and records the inputs, the posi
 ### PHP code (`src/`)
 
 PHP 8.5, PSR-4 autoloading, PSR-12 style, `declare(strict_types=1)` everywhere, PHPStan level 8. Runtime dependencies are
-only the PSR interfaces `psr/log` (PSR-3) and `psr/clock` (PSR-20).
+the PSR interfaces `psr/log` (PSR-3) and `psr/clock` (PSR-20), and [`openprunus/arcade-core`](https://github.com/OpenPrunus/arcade-core),
+the WebSocket server and support classes shared with Chicken Challenge (namespace `Arcade\`).
 
 | Namespace | Role | Patterns |
 | --- | --- | --- |
 | `Gloop\Engine` | The game: `Game`, `Slime`, `Ball`, `Rules`, `Input`, enums `Side` / `Phase` / `EventType` | Value objects (`Input`, `Contact`, `GameEvent`) |
 | `Gloop\Game` | The multiplayer server: `GameHub` (facade), `Lobby`, `Invitations`, `MatchQueue`, `MatchService`, `Room`, `RankingBook` | **Command** (one `Handler\*` per client message), **Factory** (`GameHub::create`) |
 | `Gloop\Ranking` | `Elo`, `Ranking` (immutable), `Player`, `PairLimiter`, `RankingStore` | **Repository** (`RankingStore`), immutable objects updated with `clone with` |
-| `Gloop\WebSocket` | RFC 6455: `FrameCodec`, `Handshake`, `Frame`, `Opcode` | |
-| `Gloop\Server` | Sockets and the `stream_select` loop at 60 Hz (`SocketServer`, `Connection`); knows nothing about the game | **Adapter** (`Connection` implements `Game\Transport`) |
+| `Arcade\WebSocket`, `Arcade\Server` *(arcade-core)* | RFC 6455 codec and the `stream_select` server (`SocketServer`, run here at 60 Hz); it knows nothing about the game | **Adapter** (`Connection` implements `Transport`); the game plugs in through `Hub` (`GameHub`) and `Session` (`Client`) |
 | `Gloop\Api` | `Board`: the public leaderboard | |
-| `Gloop\Support` | `Env`, `Nickname`, `SystemClock` (PSR-20), `StdoutLogger` (PSR-3), `AtomicFile` | Dependency injection of clock, logger and randomizer |
+| `Arcade\Support` *(arcade-core)* | `Env`, `Nickname`, `SystemClock` (PSR-20), `StdoutLogger` (PSR-3), `AtomicFile` | Dependency injection of clock, logger and randomizer |
 
 PHP 8.5 and recent features in use: the pipe operator (`Nickname::clean`), `clone with` on readonly classes (`Player`),
 `#[\NoDiscard]` (`Ranking::record`), `array_find` / `array_any` / `array_all` / `array_last`, property hooks and asymmetric

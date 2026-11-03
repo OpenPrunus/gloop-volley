@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Gloop\Tests\Game\Support;
 
-use Gloop\Game\Transport;
+use Arcade\Server\Transport;
 
 /** Transport de test : garde les messages envoyés au client. */
 final class FakeTransport implements Transport

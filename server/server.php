@@ -13,14 +13,15 @@
 
 declare(strict_types=1);
 
+use Arcade\Server\SocketServer;
+use Arcade\Support\Env;
+use Arcade\Support\StdoutLogger;
+use Arcade\Support\SystemClock;
+use Arcade\WebSocket\Handshake;
+use Gloop\Engine\Rules;
 use Gloop\Game\GameHub;
 use Gloop\Game\HubConfig;
 use Gloop\Ranking\RankingStore;
-use Gloop\Server\SocketServer;
-use Gloop\Support\Env;
-use Gloop\Support\StdoutLogger;
-use Gloop\Support\SystemClock;
-use Gloop\WebSocket\Handshake;
 
 set_time_limit(0);
 require __DIR__ . '/bootstrap.php';
@@ -32,7 +33,7 @@ $store = new RankingStore($dataDir . '/ratings.json');
 
 $hub = GameHub::create(HubConfig::fromEnvironment(), $store, new SystemClock(), new StdoutLogger());
 try {
-    $server = SocketServer::listen($port, $hub, new Handshake($origins));
+    $server = SocketServer::listen($port, $hub, new Handshake($origins), 1 / Rules::TICKS_PER_SECOND, 300);
 } catch (RuntimeException $e) {
     fwrite(STDERR, $e->getMessage() . "\n");
     exit(1);

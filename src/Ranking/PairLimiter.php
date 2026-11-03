@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Gloop\Ranking;
 
-use Gloop\Support\Nickname;
+use Arcade\Support\Nickname;
 
 /**
  * Anti-collusion : entre les mêmes deux joueurs, les gains d'Elo diminuent à chaque rencontre dans la fenêtre

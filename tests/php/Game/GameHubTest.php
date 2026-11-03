@@ -9,7 +9,7 @@ use Gloop\Game\ClientStatus;
 use Gloop\Game\GameHub;
 use Gloop\Game\HubConfig;
 use Gloop\Ranking\RankingStore;
-use Gloop\Support\StdoutLogger;
+use Arcade\Support\StdoutLogger;
 use Gloop\Tests\Game\Support\FakeTransport;
 use Gloop\Tests\Game\Support\MutableClock;
 use PHPUnit\Framework\TestCase;

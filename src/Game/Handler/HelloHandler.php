@@ -10,7 +10,7 @@ use Gloop\Game\Event;
 use Gloop\Game\Lobby;
 use Gloop\Game\RankingBook;
 use Gloop\Ranking\Token;
-use Gloop\Support\Nickname;
+use Arcade\Support\Nickname;
 
 /** Inscription au salon : pseudo et jeton (le serveur ne garde que le hash du jeton). */
 final readonly class HelloHandler implements MessageHandler

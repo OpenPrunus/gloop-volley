@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Gloop\Game;
 
+use Arcade\Server\Hub;
+use Arcade\Server\Session;
+use Arcade\Server\Transport;
 use Gloop\Game\Handler\AcceptHandler;
 use Gloop\Game\Handler\CancelHandler;
 use Gloop\Game\Handler\ChallengeHandler;
@@ -25,7 +28,7 @@ use Random\Randomizer;
  * Façade du serveur de jeu : le réseau lui donne des connexions, des messages texte et des battements de 1/60 s.
  * Il route chaque message vers son handler et fait avancer les matchs.
  */
-final class GameHub
+final class GameHub implements Hub
 {
     final public const int HOUSEKEEPING_EVERY = 30;   // ticks entre deux entretiens (invitations, salon)
 
@@ -79,14 +82,17 @@ final class GameHub
         return $this->matches->count();
     }
 
+    #[\Override]
     public function accept(Transport $transport): Client
     {
         return $this->lobby->create($transport, $this->clock->now()->getTimestamp());
     }
 
     /** Un message texte complet reçu d'un client. */
-    public function receive(Client $client, string $raw): void
+    #[\Override]
+    public function receive(Session $session, string $raw): void
     {
+        $client = $this->clientOf($session);
         if (!$client->allow($this->clock->now()->getTimestamp(), $this->config->rateLimit)) {
             return;                                                   // au-delà de la cadence : ignoré
         }
@@ -107,8 +113,10 @@ final class GameHub
         $this->handlers[$type->value]->handle($client, $msg);
     }
 
-    public function disconnect(Client $client): void
+    #[\Override]
+    public function disconnect(Session $session): void
     {
+        $client = $this->clientOf($session);
         $this->queue->leave($client);
         $invitation = $this->invitations->cancel($client);
         $invitation?->other($client)->send(Event::InviteCancel, ['id' => $client->id]);
@@ -116,7 +124,19 @@ final class GameHub
         $this->lobby->remove($client);
     }
 
+    #[\Override]
+    public function population(): int
+    {
+        return $this->lobby->count();
+    }
+
+    private function clientOf(Session $session): Client
+    {
+        return $session instanceof Client ? $session : throw new \InvalidArgumentException('unknown session');
+    }
+
     /** Un battement de 1/60 s : avance les matchs ; de temps en temps, expire les défis et rafraîchit le salon. */
+    #[\Override]
     public function tick(): void
     {
         $now = $this->clock->now()->getTimestamp();

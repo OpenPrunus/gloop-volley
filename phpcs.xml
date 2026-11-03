@@ -10,7 +10,6 @@
   <rule ref="PSR12"/>
   <!-- phpcs 4 ne comprend pas encore les property hooks de PHP 8.4+ : faux positifs, exclus fichier par fichier. -->
   <rule ref="PSR2.Classes.PropertyDeclaration">
-    <exclude-pattern>src/Server/Connection.php</exclude-pattern>
     <exclude-pattern>src/Game/Client.php</exclude-pattern>
   </rule>
   <rule ref="Generic.Files.LineLength">

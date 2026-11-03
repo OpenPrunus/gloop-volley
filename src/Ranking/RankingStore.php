@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Gloop\Ranking;
 
-use Gloop\Support\AtomicFile;
-use Gloop\Support\Nickname;
+use Arcade\Support\AtomicFile;
+use Arcade\Support\Nickname;
 
 /** Dépôt du classement : un fichier JSON (écrit par le serveur de jeu, lu par le site). */
 final readonly class RankingStore

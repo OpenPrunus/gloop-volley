@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gloop\Game;
 
 use Gloop\Engine\Rules;
-use Gloop\Support\Env;
+use Arcade\Support\Env;
 
 /** Réglages du serveur de jeu (durées en secondes). */
 final readonly class HubConfig

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Gloop\Game;
 
+use Arcade\Server\Session;
+use Arcade\Server\Transport;
+
 /** Un navigateur connecté : identité, état, partie en cours, invitation en attente et cadence des messages. */
-final class Client
+final class Client implements Session
 {
     public ?string $name = null;
     public string $tokenHash = '';
@@ -51,6 +54,7 @@ final class Client
         return ++$this->rateCount <= $limit;
     }
 
+    #[\Override]
     public function idleFor(int $now): int
     {
         return $now - $this->lastSeen;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gloop\Ranking;
 
 use Countable;
-use Gloop\Support\Nickname;
+use Arcade\Support\Nickname;
 
 /** Le classement : joueurs et limiteur de couples. Immuable ; record() renvoie un nouveau classement. */
 final readonly class Ranking implements Countable

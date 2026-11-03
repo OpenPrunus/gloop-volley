@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Gloop\Game;
 
-use Gloop\Support\Nickname;
+use Arcade\Server\Transport;
+use Arcade\Support\Nickname;
 
 /** Les clients connectés. Sait aussi dire qui est visible dans le salon et si un pseudo est déjà pris. */
 final class Lobby implements \Countable
