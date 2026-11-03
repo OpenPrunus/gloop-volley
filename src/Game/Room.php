@@ -14,6 +14,8 @@ final class Room
     public readonly Game $game;
     /** @var array{Input, Input} dernières touches de chaque côté */
     public array $inputs;
+    /** Pourquoi la partie n'est pas classée alors que les deux joueurs avaient un jeton (same_ip, too_many_accounts, pair_limit). */
+    public ?string $why = null;
     /** Le résultat a été communiqué aux joueurs. */
     public bool $finished = false;
     /** Fin de la fenêtre de revanche (horodatage), une fois le résultat connu. */

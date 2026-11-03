@@ -11,6 +11,7 @@ use Gloop\Engine\Phase;
 use Gloop\Engine\Side;
 use Gloop\Ranking\Participant;
 use Gloop\Ranking\RankedMatch;
+use Arcade\Fair\RankingGuard;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Random\Randomizer;
@@ -30,6 +31,7 @@ final class MatchService
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
         private readonly Randomizer $randomizer,
+        private readonly RankingGuard $guard,
     ) {
     }
 
@@ -46,12 +48,29 @@ final class MatchService
             $this->cancelInvitation($client);
         }
         [$left, $right] = $this->randomizer->getInt(0, 1) === 0 ? [$a, $b] : [$b, $a];
-        $ranked = $a->hasToken && $b->hasToken && $a->tokenHash !== $b->tokenHash;
+        [$ranked, $why] = $this->decideRanked($a, $b);
         $room = new Room([$left, $right], $ranked, $this->config->target, Side::from($this->randomizer->getInt(0, 1)));
+        $room->why = $why;
         $this->open($room);
-        $this->logger->info("Match {$left->name} vs {$right->name} (" . ($ranked ? 'ranked' : 'friendly') . ')');
+        $this->logger->info("Match {$left->name} vs {$right->name} (" . ($ranked ? 'ranked' : 'friendly' . ($why !== null ? ": $why" : '')) . ')');
 
         return $room;
+    }
+
+    /**
+     * Une partie est classée si les deux joueurs ont un jeton différent ET si les adresses IP le permettent
+     * (même adresse, trop de comptes depuis une adresse, mêmes deux adresses qui se rencontrent trop souvent).
+     *
+     * @return array{bool, ?string} classée ?, raison du refus le cas échéant
+     */
+    private function decideRanked(Client $a, Client $b): array
+    {
+        if (!($a->hasToken && $b->hasToken && $a->tokenHash !== $b->tokenHash)) {
+            return [false, null];
+        }
+        $why = $this->guard->check($a->ip, $a->tokenHash, $b->ip, $b->tokenHash, $this->clock->now()->getTimestamp());
+
+        return [$why === null, $why];
     }
 
     private function open(Room $room): void
@@ -66,6 +85,7 @@ final class MatchService
                 'side' => $side->value,
                 'target' => $room->game->target,
                 'ranked' => $room->ranked,
+                ...($room->why !== null ? ['why' => $room->why] : []),
                 'opp' => ['name' => $opponent->name, 'rating' => $this->book->ranking->ratingOf((string) $opponent->name)],
             ]);
         }
@@ -197,7 +217,10 @@ final class MatchService
         $room->opponentOf($side)->send(Event::RematchAsk);
         if ($room->rematch[0] && $room->rematch[1]) {
             $this->remove($room);
-            $this->open(new Room($room->players, $room->ranked, $this->config->target, Side::from($this->randomizer->getInt(0, 1))));
+            [$ranked, $why] = $this->decideRanked($room->players[0], $room->players[1]);
+            $next = new Room($room->players, $ranked, $this->config->target, Side::from($this->randomizer->getInt(0, 1)));
+            $next->why = $why;
+            $this->open($next);
         }
     }
 

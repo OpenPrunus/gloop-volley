@@ -42,7 +42,7 @@ const online = {
   snaps: [],
   players: [],
   invite: null,
-  ranked: false,
+  ranked: false, why: null,
   oppLeft: false,
 };
 
@@ -456,6 +456,7 @@ function startOnlineMatch(m) {
   online.status = 'playing';
   online.side = m.side;
   online.ranked = m.ranked;
+  online.why = m.why ?? null;
   online.oppLeft = false;
   online.snaps = [];
   online.invite = null;
@@ -483,7 +484,7 @@ function onResult(m) {
     if (app.mode !== 'online' || app.over !== m) return;
     app.overShown = true;
     $('#over-title').textContent = t(mine ? 'youWin' : 'youLose');
-    const lines = [`${m.score[0]} – ${m.score[1]}`, m.forfeit && mine ? t('oppLeft') : '', m.delta !== undefined ? t('ratingDelta', { rating: m.rating, delta: (m.delta >= 0 ? '+' : '') + m.delta }) : (m.forfeit ? '' : t(m.ranked ? 'ranked' : 'unranked'))];
+    const lines = [`${m.score[0]} – ${m.score[1]}`, m.forfeit && mine ? t('oppLeft') : '', m.delta !== undefined ? t('ratingDelta', { rating: m.rating, delta: (m.delta >= 0 ? '+' : '') + m.delta }) : (m.forfeit ? '' : m.ranked ? t('ranked') : t(online.why ? `why_${online.why}` : 'unranked'))];
     $('#over-detail').textContent = lines.filter(Boolean).join(' · ');
     $('#over-again').textContent = t('rematch');
     $('#over-again').disabled = online.oppLeft;

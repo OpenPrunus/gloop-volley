@@ -96,6 +96,10 @@ visibility (`Client`, `RankingBook`, `Connection`), typed class constants, enums
 
 Editable in [draw.io](https://app.diagrams.net), with PNG exports, in [`docs/diagrams/`](docs/diagrams): the game engine, the network layer and facade, and matches and ranking.
 
+## Anti-cheat (by IP)
+
+The server reads the real client address from `X-Real-IP`, trusted only when the request comes from a trusted proxy (`TRUSTED_PROXIES`, private networks by default; IPv6 grouped by /64). It is kept in memory only, never stored. A ranked match is refused (it becomes a friendly one, with the reason shown) when both players share an address, when one address uses too many accounts, or when the same pair has played too many ranked matches. Connections per address are capped (HTTP 429). Limits: `GLOOP_MAX_CONN_PER_IP`, `GLOOP_MAX_ACCOUNTS_PER_IP`, `GLOOP_MAX_PAIR_MATCHES`, `GLOOP_ALLOW_SAME_IP`. The logic lives in [arcade-core](https://github.com/OpenPrunus/arcade-core) ≥ 1.1.
+
 ## Tests
 
 ```bash
