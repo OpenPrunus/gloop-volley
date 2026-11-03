@@ -95,10 +95,16 @@ describe('page et mode local', () => {
     assert.match(gh.rel, /noopener/);
     assert.equal(gh.text, 'Voir le projet sur GitHub');
     assert.ok(gh.visible, 'le lien est visible dans le menu');
+    const all = await ev('(() => { const a = document.querySelector(".foot a.all"); return a && { href: a.href, target: a.target, text: a.textContent.trim(), visible: a.getBoundingClientRect().height > 0 }; })()');
+    assert.equal(all.href, 'https://games.prunus.dev/');
+    assert.equal(all.target, '', 'même onglet');
+    assert.equal(all.text, '← Tous les jeux');
+    assert.ok(all.visible, 'le lien de retour est visible dans le menu');
     await shot('01-menu');
     await click('#opt-lang');
     assert.match(await ev('document.querySelector("[data-action=ai]").textContent'), /computer/);
     assert.equal(await ev('document.querySelector(".foot a.gh").textContent.trim()'), 'View the project on GitHub');
+    assert.equal(await ev('document.querySelector(".foot a.all").textContent.trim()'), '← All games');
     assert.equal(await ev('document.documentElement.lang'), 'en');
     assert.deepEqual(errors, []);
   });
