@@ -74,7 +74,7 @@ input { flex: 1; min-width: 160px; }
 #touch.duo .pad.p1 .jump, #touch.duo .pad.p2 .jump { background: rgba(125, 220, 107, 0.35); }
 
 @media (max-width: 640px) and (orientation: portrait) {
-  body { place-items: start center; }
+  body { place-items: center; }
   #stage { width: 100vw; }
   .hint.rotate { display: block; color: #ffd27a; }
   .panel { position: fixed; max-height: 94dvh; }
@@ -87,4 +87,16 @@ input { flex: 1; min-width: 160px; }
   .foot { margin-top: 8px; }
   .stack { gap: 6px; }
   .btn { padding: 8px 12px; }
+}
+
+/* ---- téléphone : zones sûres (encoche, barre d'accueil), astuce de rotation, plein écran ---- */
+.icon-btn { top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); }
+#fs-btn { right: calc(max(8px, env(safe-area-inset-right)) + 48px); font-size: 20px; }
+.pad { bottom: max(10px, env(safe-area-inset-bottom)); }
+.pad.p1 { left: max(10px, env(safe-area-inset-left)); }
+.pad.p2 { right: max(10px, env(safe-area-inset-right)); }
+#touch.solo .pad.p1 { left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right)); }
+#rotate-tip { display: none; }
+@media (max-width: 640px) and (orientation: portrait) {
+  body.playing #rotate-tip { display: block; position: absolute; left: 0; right: 0; top: calc(100% + 8px); margin: 0; padding: 0 16px; text-align: center; font-size: 13px; color: #ffd27a; pointer-events: none; }
 }

@@ -193,6 +193,37 @@ describe('mobile', () => {
     assert.notEqual(await ev('getComputedStyle(document.querySelector(".hint.rotate")).display'), 'none');
     await shot('06-phone-portrait');
   });
+
+  test('portrait en jeu : astuce de rotation, commandes tactiles entières et assez grandes', async () => {
+    await open(PHONE_PORTRAIT);
+    await click('[data-action=ai]');
+    await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
+    assert.equal(await ev('getComputedStyle(document.querySelector("#rotate-tip")).display'), 'block', 'l\'astuce est affichée en portrait pendant la partie');
+    const tip = await rect('#rotate-tip');
+    const stage = await rect('#stage');
+    assert.ok(tip.y >= stage.y + stage.h - 1 && tip.x >= 0 && tip.x + tip.w <= PHONE_PORTRAIT.w + 1, 'sous le terrain, dans la largeur');
+    for (const sel of ['[data-p="1"][data-k=left]', '[data-p="1"][data-k=right]', '[data-p="1"][data-k=up]']) {
+      const b = await rect(sel);
+      assert.ok(b.w >= 48 && b.h >= 48, `${sel} : ${Math.round(b.w)}x${Math.round(b.h)}`);
+      assert.ok(b.x >= 0 && b.y >= 0 && b.x + b.w <= PHONE_PORTRAIT.w + 1 && b.y + b.h <= PHONE_PORTRAIT.h + 1, `${sel} entier dans l'écran`);
+    }
+    assert.equal(await ev('document.documentElement.scrollWidth <= innerWidth'), true);
+    await shot('06b-phone-portrait-game');
+  });
+
+  test('plein écran : le bouton existe sur tactile, pas sur ordinateur, et les zones sûres sont prévues', async () => {
+    await open(PHONE_LANDSCAPE);
+    await click('[data-action=ai]');
+    await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
+    assert.equal(await ev('!document.querySelector("#fs-btn").hidden'), true, 'bouton plein écran en jeu sur téléphone');
+    await click('[data-action=quit]').catch(() => {});
+    await open(DESKTOP);
+    await click('[data-action=ai]');
+    await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
+    assert.equal(await ev('document.querySelector("#fs-btn").hidden'), true, 'pas de bouton plein écran avec une souris');
+    const css = await ev('(() => { const t = [...document.styleSheets[0].cssRules].map((r) => r.cssText).join(" "); return t.includes("safe-area-inset-bottom") && t.includes("safe-area-inset-left"); })()');
+    assert.equal(css, true, 'zones sûres (encoche, barre d\'accueil) prises en compte');
+  });
 });
 
 describe('en ligne (vrai serveur PHP, adversaire robot)', () => {

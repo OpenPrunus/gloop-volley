@@ -33,6 +33,8 @@ $ws = (string) getenv('GLOOP_WS');
     </div>
 
     <button id="pause-btn" class="icon-btn" hidden aria-label="Pause">⏸</button>
+    <button id="fs-btn" class="icon-btn" hidden data-i18n-aria="fullscreen">⛶</button>
+    <p id="rotate-tip" data-i18n="rotateTip"></p>
 
     <section id="menu" class="panel">
       <h1 data-i18n="title">Gloop Volley</h1>
@@ -55,6 +57,7 @@ $ws = (string) getenv('GLOOP_WS');
         </label>
         <button class="btn small" id="opt-sound"></button>
         <button class="btn small" id="opt-lang"></button>
+        <button class="btn small" id="opt-fs" hidden></button>
       </div>
       <p class="hint" data-i18n="controls"></p>
       <p class="hint" data-i18n="controls2p"></p>

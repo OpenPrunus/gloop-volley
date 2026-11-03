@@ -52,10 +52,42 @@ function hidePanels() {
   updateTouch();
 }
 
+// ---------------------------------------------------------------- confort sur téléphone : plein écran, écran allumé
+const canFullscreen = () => !!document.documentElement.requestFullscreen && isTouchDevice();
+
+async function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+      screen.orientation?.unlock?.();
+    } else {
+      await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      await screen.orientation?.lock?.('landscape').catch(() => {});     // Android : le plein écran permet de verrouiller le paysage
+    }
+  } catch { /* refusé par le navigateur : sans importance */ }
+}
+
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (!on) {
+      await wakeLock?.release();
+      wakeLock = null;
+    } else if ('wakeLock' in navigator && !wakeLock && !document.hidden) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch { /* indisponible ou refusé */ }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && app.mode !== null) keepAwake(true); });
+document.addEventListener('fullscreenchange', () => refreshLabels());
+
 function refreshLabels() {
   i18n.apply(document);
   $('#opt-sound').textContent = `${t('sound')} : ${audio.isMuted() ? t('off') : t('on')}`;
   $('#opt-lang').textContent = `${t('language')} : ${i18n.getLang().toUpperCase()}`;
+  $('#opt-fs').hidden = !canFullscreen();
+  $('#opt-fs').textContent = t(document.fullscreenElement ? 'exitFullscreen' : 'fullscreen');
   $('#opt-level').value = opts.level;
   $('#opt-points').value = String(opts.points);
   $('#nick').value = opts.name ?? '';
@@ -106,6 +138,9 @@ const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches || 'o
 function updateTouch() {
   const el = $('#touch');
   const inGame = app.mode !== null && panels.menu.hidden && panels.online.hidden;
+  document.body.classList.toggle('playing', inGame);
+  $('#fs-btn').hidden = !(app.mode !== null && canFullscreen());
+  keepAwake(app.mode !== null && isTouchDevice());
   el.hidden = !(inGame && isTouchDevice());
   el.classList.toggle('duo', app.mode === 'local');
   el.classList.toggle('solo', app.mode !== 'local');
@@ -567,6 +602,8 @@ document.addEventListener('click', (e) => {
 });
 
 $('#pause-btn').addEventListener('click', () => togglePause());
+$('#fs-btn').addEventListener('click', () => toggleFullscreen());
+$('#opt-fs').addEventListener('click', () => toggleFullscreen());
 $('#opt-level').addEventListener('change', (e) => { opts.level = e.target.value; saveOpts(); });
 $('#opt-points').addEventListener('change', (e) => { opts.points = Number(e.target.value); saveOpts(); });
 $('#opt-sound').addEventListener('click', () => { audio.unlock(); audio.setMuted(!audio.isMuted()); refreshLabels(); });

@@ -33,7 +33,7 @@ the configuration variables and a reverse-proxy example.
 | Jump | ↑ or **W** / **Z** (or space) | ↑ |
 | Pause | Esc or P | |
 
-On a phone, ◀ ▶ and ▲ buttons appear over the court.
+On a phone, ◀ ▶ and ▲ buttons appear over the court (kept clear of notches and the home bar), a fullscreen button locks landscape on Android, the screen stays on while you play, and in portrait a hint suggests turning the phone.
 
 ## Architecture
 
