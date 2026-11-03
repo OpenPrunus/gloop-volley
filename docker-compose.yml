@@ -1,0 +1,26 @@
+services:
+  gloop:                         # site web (PHP 8.5 + Apache)
+    build: .
+    ports:
+      - "8090:80"
+    environment:
+      # URL WebSocket vue par le navigateur ; vide = même hôte, port 8081 (ou /ws derrière HTTPS)
+      GLOOP_WS: "ws://localhost:8091"
+    volumes:
+      - data:/var/www/html/data
+    restart: unless-stopped
+
+  gloop-ws:                      # serveur de jeu multijoueur (même image, autre commande)
+    build: .
+    command: ["php", "/opt/gloop/server.php"]
+    ports:
+      - "8091:8081"
+    volumes:
+      - data:/var/www/html/data   # classement (écrit ici, lu par le site)
+    environment:
+      WS_PORT: "8081"
+      WS_ALLOWED_ORIGINS: ""     # ex. "https://gloop.exemple.fr" pour restreindre
+    restart: unless-stopped
+
+volumes:
+  data:
