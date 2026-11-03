@@ -171,64 +171,150 @@ describe('page et mode local', () => {
   });
 });
 
-describe('mobile', () => {
-  test('paysage : commandes tactiles visibles et fonctionnelles', async () => {
-    await open(PHONE_LANDSCAPE);
-    assert.equal(await ev('matchMedia("(pointer: coarse)").matches'), true);
+const touchEvent = (type, points) => call('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : points });
+/** Pose un doigt en (x, y), le glisse de (dx, dy) en plusieurs étapes, le laisse `hold` ms, puis le lève. */
+const drag = async (x, y, dx, dy, hold = 0, steps = 8) => {
+  await touchEvent('touchStart', [{ x, y, id: 1 }]);
+  for (let i = 1; i <= steps; i++) { await touchEvent('touchMove', [{ x: x + (dx * i) / steps, y: y + (dy * i) / steps, id: 1 }]); await sleep(14); }
+  await sleep(hold);
+  await touchEvent('touchEnd');
+  await sleep(60);
+};
+
+describe('mobile : des gestes, pas de boutons', () => {
+  const startAi = async (device) => {
+    await open(device);
     await click('[data-action=ai]');
-    await waitFor(async () => (await gstate())?.phase === 'play', 5000, 'service');
-    assert.equal(await ev('document.getElementById("touch").hidden'), false);
-    const r = await rect('#touch button[data-p="1"][data-k="right"]');
-    assert.ok(r.w >= 44 && r.h >= 44, `bouton assez grand : ${r.w}x${r.h}`);
-    const x0 = (await gstate()).x[0];
-    await call('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: r.cx, y: r.cy, id: 1 }] });
-    await sleep(300);
-    await call('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    assert.ok((await gstate()).x[0] > x0 + 40, 'le doigt déplace le gloop');
-    await shot('05-phone-landscape');
-    const o = await ev('({ sw: document.documentElement.scrollWidth, iw: innerWidth })');
-    assert.ok(o.sw <= o.iw, 'pas de défilement horizontal');
+    await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
+  };
+
+  test('aucun bouton : glisser à droite puis à gauche déplace le gloop tant que le doigt reste décalé', async () => {
+    for (const device of [PHONE_LANDSCAPE, PHONE_PORTRAIT]) {
+      await startAi(device);
+      assert.equal(await ev('document.getElementById("touch")'), null, 'la barre de boutons n\'existe plus');
+      assert.equal(await ev('document.querySelectorAll("#stage button[data-k]").length'), 0);
+      const c = { x: device.w / 2, y: device.h * 0.65 };
+      const x0 = (await gstate()).x[0];
+      await drag(c.x, c.y, 60, 4, 450);
+      const right = (await gstate()).x[0];
+      assert.ok(right > x0 + 60, `${device.w}x${device.h} : le gloop avance vers la droite (${Math.round(x0)} -> ${Math.round(right)})`);
+      await drag(c.x, c.y, -60, 4, 450);
+      assert.ok((await gstate()).x[0] < right - 60, 'et vers la gauche');
+      const still = (await gstate()).x[0];
+      await touchEvent('touchStart', [{ x: c.x, y: c.y, id: 1 }]);
+      await sleep(500);
+      await touchEvent('touchEnd');
+      assert.ok(Math.abs((await gstate()).x[0] - still) < 8, 'un doigt immobile ne déplace pas le gloop');
+    }
   });
 
-  test('portrait : le menu tient dans la largeur et invite à tourner le téléphone', async () => {
+  test('changer de sens sans lever le doigt : le point de départ suit le doigt', async () => {
+    await startAi(PHONE_LANDSCAPE);
+    const x0 = (await gstate()).x[0];
+    await touchEvent('touchStart', [{ x: 400, y: 250, id: 1 }]);
+    for (let i = 1; i <= 10; i++) { await touchEvent('touchMove', [{ x: 400 + i * 12, y: 250, id: 1 }]); await sleep(14); }    // loin à droite
+    await sleep(300);
+    const far = (await gstate()).x[0];
+    for (let i = 1; i <= 10; i++) { await touchEvent('touchMove', [{ x: 520 - i * 4, y: 250, id: 1 }]); await sleep(14); }       // un petit retour suffit
+    await sleep(350);
+    await touchEvent('touchEnd');
+    assert.ok(far > x0 + 40);
+    assert.ok((await gstate()).x[0] < far, 'le gloop est repassé vers la gauche sans lever le doigt');
+  });
+
+  test('glisser vers le haut ou toucher fait sauter', async () => {
+    for (const device of [PHONE_LANDSCAPE, PHONE_PORTRAIT]) {
+      await startAi(device);
+      const c = { x: device.w / 2, y: device.h * 0.7 };
+      assert.equal((await gstate()).y[0], 0, 'au sol');
+      await drag(c.x, c.y, 2, -80, 0);
+      await sleep(120);
+      assert.ok((await gstate()).y[0] > 10, `${device.w}x${device.h} : un coup de doigt vers le haut fait sauter`);
+      await waitFor(async () => (await gstate()).y[0] === 0, 3000, 'retour au sol');
+      await touchEvent('touchStart', [{ x: c.x, y: c.y, id: 1 }]);
+      await sleep(70);
+      await touchEvent('touchEnd');
+      await sleep(120);
+      assert.ok((await gstate()).y[0] > 10, 'un simple toucher fait sauter aussi');
+    }
+  });
+
+  test('2 joueurs sur le même écran : chacun sa moitié (gauche = joueur 1, droite = joueur 2)', async () => {
+    await open(PHONE_LANDSCAPE);
+    await click('[data-action=local]');
+    await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
+    const before = await gstate();
+    await drag(150, 250, 60, 0, 400);                       // moitié gauche : le joueur 1 va vers la droite
+    const a = await gstate();
+    assert.ok(a.x[0] > before.x[0] + 50, 'joueur 1 déplacé');
+    assert.ok(Math.abs(a.x[1] - before.x[1]) < 8, 'joueur 2 immobile');
+    await drag(700, 250, -60, 0, 400);                      // moitié droite : le joueur 2 va vers la gauche
+    const b = await gstate();
+    assert.ok(b.x[1] < a.x[1] - 50, 'joueur 2 déplacé');
+    assert.ok(Math.abs(b.x[0] - a.x[0]) < 8, 'joueur 1 immobile');
+    await drag(700, 300, 2, -80, 0);
+    await sleep(120);
+    assert.ok((await gstate()).y[1] > 10 && (await gstate()).y[0] === 0, 'le saut de la moitié droite ne concerne que le joueur 2');
+    assert.equal(await ev('document.querySelector("#gesture-tip").textContent.includes("moitié")'), true, 'rappel : chacun sa moitié');
+  });
+
+  test('deux doigts : un pouce déplace, l\'autre fait sauter', async () => {
+    await startAi(PHONE_LANDSCAPE);
+    const x0 = (await gstate()).x[0];
+    await touchEvent('touchStart', [{ x: 200, y: 280, id: 1 }]);
+    await touchEvent('touchMove', [{ x: 260, y: 280, id: 1 }]);
+    await touchEvent('touchStart', [{ x: 260, y: 280, id: 1 }, { x: 600, y: 300, id: 2 }]);
+    for (let i = 1; i <= 6; i++) { await touchEvent('touchMove', [{ x: 260, y: 280, id: 1 }, { x: 600, y: 300 - i * 14, id: 2 }]); await sleep(14); }
+    await sleep(200);
+    const mid = await gstate();
+    await touchEvent('touchEnd');
+    assert.ok(mid.x[0] > x0 + 10, 'le premier doigt déplace');
+    assert.ok(mid.y[0] > 5, 'le second fait sauter');
+  });
+
+  test('en pause, dans le menu et à la souris : aucun geste', async () => {
+    await open(PHONE_PORTRAIT);
+    await drag(200, 500, 80, -90, 100);
+    assert.equal(await ev('window.__gloop.app.game'), null, 'le menu n\'est pas une partie');
+    await open(DESKTOP);
+    await click('[data-action=ai]');
+    await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
+    const x0 = (await gstate()).x[0];
+    await call('Input.dispatchMouseEvent', { type: 'mousePressed', x: 300, y: 400, button: 'left', clickCount: 1 });
+    await call('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 420, y: 400, button: 'left' });
+    await sleep(300);
+    await call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 420, y: 400, button: 'left', clickCount: 1 });
+    assert.ok(Math.abs((await gstate()).x[0] - x0) < 8, 'la souris ne pilote pas le gloop');
+    assert.equal(await ev('document.querySelector("#gesture-tip").classList.contains("show")'), false, 'pas de rappel sur un ordinateur');
+  });
+
+  test('portrait : le menu décrit les gestes, le rappel s\'affiche en jeu, rien ne déborde', async () => {
     await open(PHONE_PORTRAIT);
     const o = await ev('({ sw: document.documentElement.scrollWidth, iw: innerWidth })');
     assert.ok(o.sw <= o.iw);
     const m = await rect('#menu');
     assert.ok(m.x >= 0 && m.x + m.w <= o.iw + 0.5);
+    assert.match(await ev('document.querySelector(".touchhint").textContent'), /Sur téléphone|glisse/i);
+    assert.equal(await ev('getComputedStyle(document.querySelector(".hint.keys")).display'), 'none', 'les touches du clavier sont masquées sur tactile');
     assert.notEqual(await ev('getComputedStyle(document.querySelector(".hint.rotate")).display'), 'none');
     await shot('06-phone-portrait');
-  });
-
-  test('portrait en jeu : astuce de rotation, commandes tactiles entières et assez grandes', async () => {
-    await open(PHONE_PORTRAIT);
     await click('[data-action=ai]');
     await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
-    assert.equal(await ev('getComputedStyle(document.querySelector("#rotate-tip")).display'), 'block', 'l\'astuce est affichée en portrait pendant la partie');
-    const tip = await rect('#rotate-tip');
-    const stage = await rect('#stage');
-    assert.ok(tip.y >= stage.y + stage.h - 1 && tip.x >= 0 && tip.x + tip.w <= PHONE_PORTRAIT.w + 1, 'sous le terrain, dans la largeur');
-    for (const sel of ['[data-p="1"][data-k=left]', '[data-p="1"][data-k=right]', '[data-p="1"][data-k=up]']) {
-      const b = await rect(sel);
-      assert.ok(b.w >= 48 && b.h >= 48, `${sel} : ${Math.round(b.w)}x${Math.round(b.h)}`);
-      assert.ok(b.x >= 0 && b.y >= 0 && b.x + b.w <= PHONE_PORTRAIT.w + 1 && b.y + b.h <= PHONE_PORTRAIT.h + 1, `${sel} entier dans l'écran`);
-    }
+    assert.equal(await ev('document.querySelector("#gesture-tip").classList.contains("show")'), true, 'rappel des gestes');
+    assert.equal(await ev('getComputedStyle(document.querySelector("#rotate-tip")).display'), 'block', 'astuce de rotation');
     assert.equal(await ev('document.documentElement.scrollWidth <= innerWidth'), true);
     await shot('06b-phone-portrait-game');
   });
 
   test('plein écran : le bouton existe sur tactile, pas sur ordinateur, et les zones sûres sont prévues', async () => {
-    await open(PHONE_LANDSCAPE);
-    await click('[data-action=ai]');
-    await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
+    await startAi(PHONE_LANDSCAPE);
     assert.equal(await ev('!document.querySelector("#fs-btn").hidden'), true, 'bouton plein écran en jeu sur téléphone');
-    await click('[data-action=quit]').catch(() => {});
     await open(DESKTOP);
     await click('[data-action=ai]');
     await waitFor(async () => (await gstate())?.phase === 'play', 6000, 'service');
     assert.equal(await ev('document.querySelector("#fs-btn").hidden'), true, 'pas de bouton plein écran avec une souris');
-    const css = await ev('(() => { const t = [...document.styleSheets[0].cssRules].map((r) => r.cssText).join(" "); return t.includes("safe-area-inset-bottom") && t.includes("safe-area-inset-left"); })()');
-    assert.equal(css, true, 'zones sûres (encoche, barre d\'accueil) prises en compte');
+    const css = await ev('(() => { const t = [...document.styleSheets[0].cssRules].map((r) => r.cssText).join(" "); return t.includes("safe-area-inset-top") && t.includes("safe-area-inset-right"); })()');
+    assert.equal(css, true, 'zones sûres (encoche) prises en compte');
   });
 });
 

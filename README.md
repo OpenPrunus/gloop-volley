@@ -7,7 +7,7 @@ French and English, keyboard and touch.
 ## Features
 
 - **Against the computer** in three levels (the AI predicts the ball's landing point with the game's own physics and picks the return that clears the net and lands far from you).
-- **Two players on one screen** (keyboard) and **touch controls** on phones.
+- **Two players on one screen** (keyboard, or half of the screen each on a phone) and **touch gestures** on phones.
 - **Online multiplayer**: a central PHP 8.5 server runs the match at 60 Hz and the browsers only send their keys.
   Lobby, quick match, challenges by clicking a nickname, rematch, ping display.
 - **Ranked matches** with an Elo rating, without any account: each browser has a secret token (only its SHA-256 hash is stored)
@@ -33,7 +33,7 @@ the configuration variables and a reverse-proxy example.
 | Jump | ↑ or **W** / **Z** (or space) | ↑ |
 | Pause | Esc or P | |
 
-On a phone, ◀ ▶ and ▲ buttons appear over the court (kept clear of notches and the home bar), a fullscreen button locks landscape on Android, the screen stays on while you play, and in portrait a hint suggests turning the phone.
+On a phone there are no buttons: put a finger anywhere and slide it left or right to move (it works like a floating joystick: go further and the starting point follows your finger, so you can reverse without lifting it), swipe up or tap to jump. Two players on one phone each take half of the screen. A fullscreen button locks landscape on Android, the screen stays on while you play, notches and the home bar are respected.
 
 ## Architecture
 
@@ -45,6 +45,7 @@ web/                 website, served by Apache (PHP 8.5)
   js/ai.js           the computer opponent (uses engine.js to simulate returns)
   js/render.js       Canvas rendering
   js/main.js         menus, game loop, keyboard / touch input, online mode
+  js/gestures.js     touch gestures: floating joystick and jump (no on-screen buttons)
   js/net.js          WebSocket client
   js/i18n.js         French / English
 server/server.php    entry point of the game server (a few lines of wiring)

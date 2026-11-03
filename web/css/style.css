@@ -61,24 +61,11 @@ input { flex: 1; min-width: 160px; }
 
 .icon-btn { position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: rgba(0, 0, 0, 0.35); color: #fff; font-size: 18px; cursor: pointer; }
 
-#touch { position: absolute; inset: auto 0 0 0; height: 46%; pointer-events: none; }
-.pad { position: absolute; bottom: 10px; display: flex; gap: 10px; pointer-events: none; }
-.pad button { pointer-events: auto; width: clamp(54px, 13vw, 84px); height: clamp(54px, 13vw, 84px); border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.7); background: rgba(0, 0, 0, 0.28); color: #fff; font-size: clamp(20px, 5vw, 30px); touch-action: none; }
-.pad button.down { background: rgba(255, 255, 255, 0.45); }
-.pad.p1 { left: 10px; }
-.pad.p2 { right: 10px; }
-#touch.solo .pad.p1 { left: 10px; right: 10px; justify-content: space-between; }
-#touch.solo .pad.p1 .jump { order: 3; margin-left: auto; }
-#touch.solo .pad.p2 { display: none; }
-#touch:not(.duo) .pad.p2 { display: none; }
-#touch.duo .pad.p1 .jump, #touch.duo .pad.p2 .jump { background: rgba(125, 220, 107, 0.35); }
-
 @media (max-width: 640px) and (orientation: portrait) {
   body { place-items: center; }
   #stage { width: 100vw; }
   .hint.rotate { display: block; color: #ffd27a; }
   .panel { position: fixed; max-height: 94dvh; }
-  #touch { position: fixed; inset: auto 0 0 0; height: 36vh; }
 }
 @media (max-height: 420px) {
   .panel { padding: 10px 14px; }
@@ -92,10 +79,6 @@ input { flex: 1; min-width: 160px; }
 /* ---- téléphone : zones sûres (encoche, barre d'accueil), astuce de rotation, plein écran ---- */
 .icon-btn { top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); }
 #fs-btn { right: calc(max(8px, env(safe-area-inset-right)) + 48px); font-size: 20px; }
-.pad { bottom: max(10px, env(safe-area-inset-bottom)); }
-.pad.p1 { left: max(10px, env(safe-area-inset-left)); }
-.pad.p2 { right: max(10px, env(safe-area-inset-right)); }
-#touch.solo .pad.p1 { left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right)); }
 #rotate-tip { display: none; }
 @media (max-width: 640px) and (orientation: portrait) {
   body.playing #rotate-tip { display: block; position: absolute; left: 0; right: 0; top: calc(100% + 8px); margin: 0; padding: 0 16px; text-align: center; font-size: 13px; color: #ffd27a; pointer-events: none; }
@@ -107,3 +90,11 @@ input { flex: 1; min-width: 160px; }
 .all:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (pointer: coarse) { .all { min-height: 44px; } }
 @media (prefers-reduced-motion: reduce) { .all { transition: none; } }
+
+/* ---- téléphone : des gestes sur tout l'écran, pas de boutons ---- */
+html, body { touch-action: none; overscroll-behavior: none; }
+.hint.touchhint { display: none; }
+@media (pointer: coarse) { .hint.keys { display: none; } .hint.touchhint { display: block; } }
+#gesture-tip { position: fixed; left: 50%; top: 62%; transform: translateX(-50%); width: min(92vw, 460px); margin: 0; padding: 8px 14px; border-radius: 12px; background: rgba(10, 15, 33, 0.82); border: 1px solid var(--line); text-align: center; font-size: 13px; color: #dbe4ff; pointer-events: none; opacity: 0; transition: opacity 0.4s ease; z-index: 6; }
+#gesture-tip.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { #gesture-tip { transition: none; } }

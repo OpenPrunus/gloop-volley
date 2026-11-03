@@ -19,21 +19,9 @@ $ws = (string) getenv('GLOOP_WS');
   <div id="stage">
     <canvas id="game" aria-label="Gloop Volley"></canvas>
 
-    <div id="touch" hidden>
-      <div class="pad p1">
-        <button data-p="1" data-k="left" data-i18n-aria="left">◀</button>
-        <button data-p="1" data-k="right" data-i18n-aria="right">▶</button>
-        <button data-p="1" data-k="up" class="jump" data-i18n-aria="jump">▲</button>
-      </div>
-      <div class="pad p2">
-        <button data-p="2" data-k="left" data-i18n-aria="left">◀</button>
-        <button data-p="2" data-k="right" data-i18n-aria="right">▶</button>
-        <button data-p="2" data-k="up" class="jump" data-i18n-aria="jump">▲</button>
-      </div>
-    </div>
-
     <button id="pause-btn" class="icon-btn" hidden aria-label="Pause">⏸</button>
     <button id="fs-btn" class="icon-btn" hidden data-i18n-aria="fullscreen">⛶</button>
+    <p id="gesture-tip"></p>
     <p id="rotate-tip" data-i18n="rotateTip"></p>
 
     <section id="menu" class="panel">
@@ -59,8 +47,10 @@ $ws = (string) getenv('GLOOP_WS');
         <button class="btn small" id="opt-lang"></button>
         <button class="btn small" id="opt-fs" hidden></button>
       </div>
-      <p class="hint" data-i18n="controls"></p>
-      <p class="hint" data-i18n="controls2p"></p>
+      <p class="hint keys" data-i18n="controls"></p>
+      <p class="hint keys" data-i18n="controls2p"></p>
+      <p class="hint touchhint" data-i18n="controlsTouch"></p>
+      <p class="hint touchhint" data-i18n="controlsTouch2p"></p>
       <p class="hint rotate" data-i18n="rotate"></p>
       <footer class="foot">
         <a class="all" href="https://games.prunus.dev" data-i18n="allGames"></a>

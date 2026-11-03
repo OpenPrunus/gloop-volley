@@ -5,6 +5,7 @@ import * as i18n from './i18n.js';
 import * as audio from './audio.js';
 import { draw } from './render.js';
 import { Net, playerToken } from './net.js';
+import { bindGestures } from './gestures.js';
 
 const { t } = i18n;
 const $ = (sel) => document.querySelector(sel);
@@ -96,6 +97,7 @@ function refreshLabels() {
 
 // ---------------------------------------------------------------- saisie
 const keys = new Set();
+let gestures = null;
 const touch = { 1: { left: false, right: false, up: false }, 2: { left: false, right: false, up: false } };
 const normKey = (e) => (e.key.length === 1 ? e.key.toLowerCase() : e.key);
 
@@ -136,30 +138,25 @@ function readInputs() {
 const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 
 function updateTouch() {
-  const el = $('#touch');
   const inGame = app.mode !== null && panels.menu.hidden && panels.online.hidden;
   document.body.classList.toggle('playing', inGame);
   $('#fs-btn').hidden = !(app.mode !== null && canFullscreen());
   keepAwake(app.mode !== null && isTouchDevice());
-  el.hidden = !(inGame && isTouchDevice());
-  el.classList.toggle('duo', app.mode === 'local');
-  el.classList.toggle('solo', app.mode !== 'local');
+  if (!inGame) gestures?.reset();
 }
 
-for (const btn of document.querySelectorAll('#touch button')) {
-  const { p, k } = btn.dataset;
-  const set = (v) => {
-    touch[p][k] = v;
-    btn.classList.toggle('down', v);
-  };
-  btn.addEventListener('pointerdown', (e) => {
-    audio.unlock();
-    btn.setPointerCapture(e.pointerId);
-    set(true);
-    e.preventDefault();
-  });
-  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) btn.addEventListener(ev, () => set(false));
-  btn.addEventListener('contextmenu', (e) => e.preventDefault());
+gestures = bindGestures(document, { touch, enabled: () => app.mode !== null && !app.paused && Object.values(panels).every((p) => p.hidden), duo: () => app.mode === 'local' });
+
+let gestureTipTimer = 0;
+/** Au début d'une partie sur tactile, un rappel des gestes disparaît tout seul. */
+function showGestureTip() {
+  if (!isTouchDevice()) return;
+  const el = $('#gesture-tip');
+  el.dataset.i18n = app.mode === 'local' ? 'gestureTip2p' : 'gestureTip';
+  el.textContent = t(el.dataset.i18n);
+  el.classList.add('show');
+  clearTimeout(gestureTipTimer);
+  gestureTipTimer = setTimeout(() => el.classList.remove('show'), 6000);
 }
 
 // ---------------------------------------------------------------- parties locales
@@ -174,6 +171,7 @@ function startLocal(mode) {
   app.paused = false;
   app.overShown = false;
   hidePanels();
+  showGestureTip();
 }
 
 function endSession() {
@@ -466,6 +464,7 @@ function startOnlineMatch(m) {
   app.names = m.side === LEFT ? [me, m.opp.name] : [m.opp.name, me];
   app.target = m.target;
   hidePanels();
+  showGestureTip();
   audio.unlock();
 }
 
