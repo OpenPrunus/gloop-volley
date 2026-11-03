@@ -14,6 +14,7 @@ French and English, keyboard and touch.
   that reserves the nickname. Anti-collusion: gains shrink when the same two players meet again within 24 hours.
 - Sounds are synthesized (no audio files), the game works offline in AI / 2-player modes.
 
+- **Installable and playable offline** (PWA): web manifest, icons, and a service worker that serves the last visit's files when there is no network. Solo and computer modes work offline; online play shows a clear message.
 ## Quick start
 
 ```bash

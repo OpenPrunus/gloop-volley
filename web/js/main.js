@@ -263,7 +263,7 @@ const net = new Net({
       showPanel('online');
       $('#join').hidden = true;
       $('#lobby').hidden = true;
-      setOnlineStatus(t(wasOpen ? 'disconnected' : 'unreachable'), true);
+      setOnlineStatus(t(wasOpen ? 'disconnected' : navigator.onLine === false ? 'offline' : 'unreachable'), true);
     }
   },
 });

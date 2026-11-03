@@ -10,6 +10,11 @@ $ws = (string) getenv('GLOOP_WS');
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#5ec3ff">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <script src="pwa.js" defer></script>
   <title>Gloop Volley</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 26a14 14 0 0 1 28 0z' fill='%237ddc6b' stroke='%233f9f3b' stroke-width='2'/%3E%3Ccircle cx='21' cy='15' r='4' fill='%23fff' stroke='%23222'/%3E%3Ccircle cx='22' cy='15' r='2' fill='%23111'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
