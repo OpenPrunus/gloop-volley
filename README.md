@@ -93,7 +93,7 @@ visibility (`Client`, `RankingBook`, `Connection`), typed class constants, enums
 
 ### Class diagrams
 
-See [`docs/diagrams/`](docs/diagrams) when present (draw.io sources and PNG exports).
+Editable in [draw.io](https://app.diagrams.net), with PNG exports, in [`docs/diagrams/`](docs/diagrams): the game engine, the network layer and facade, and matches and ranking.
 
 ## Tests
 
