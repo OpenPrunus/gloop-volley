@@ -40,11 +40,5 @@
     "psr-4": {
       "Gloop\\Tests\\": "tests/php/"
     }
-  },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/OpenPrunus/arcade-core"
-    }
-  ]
+  }
 }

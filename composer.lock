@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd21b9e525b40242673af957219994bb",
+    "content-hash": "ba52e4da87170c1f93135cb3e29aca80",
     "packages": [
         {
             "name": "openprunus/arcade-core",
@@ -38,39 +38,17 @@
                     "Arcade\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Arcade\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit"
-                ],
-                "cs": [
-                    "phpcs"
-                ],
-                "cs:fix": [
-                    "phpcbf"
-                ],
-                "stan": [
-                    "phpstan analyse --no-progress --memory-limit=512M"
-                ],
-                "check": [
-                    "@cs",
-                    "@stan",
-                    "@test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "Shared core for the OpenPrunus multiplayer games: WebSocket server (RFC 6455) in pure PHP, and small support classes",
             "support": {
-                "source": "https://github.com/OpenPrunus/arcade-core/tree/v1.0.0",
-                "issues": "https://github.com/OpenPrunus/arcade-core/issues"
+                "issues": "https://github.com/OpenPrunus/arcade-core/issues",
+                "source": "https://github.com/OpenPrunus/arcade-core/tree/v1.0.0"
             },
-            "time": "2026-11-03T13:16:11+00:00"
+            "time": "2026-11-03T13:16:11+00:00",
+            "published-time": "2026-11-03T13:23:42+00:00"
         },
         {
             "name": "psr/clock",
